@@ -32,7 +32,9 @@ func loadKeyRing(t *testing.T, file string, pass []byte) *crypto.KeyRing {
 	f, err := os.Open(file)
 	require.NoError(t, err)
 
-	defer f.Close()
+	defer func() {
+		require.NoError(t, f.Close())
+	}()
 
 	key, err := crypto.NewKeyFromArmoredReader(f)
 	require.NoError(t, err)

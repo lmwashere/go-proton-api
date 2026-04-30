@@ -198,12 +198,21 @@ func readFrom[T any](b []byte) (T, error) {
 	return v, nil
 }
 
-func readFromBody[T any](r *http.Request) (T, error) {
+// checkClose is a utility function used to check the return from
+// Close in a defer statement.
+func checkClose(c io.Closer, err *error) {
+	cerr := c.Close()
+	if *err == nil {
+		*err = cerr
+	}
+}
+
+func readFromBody[T any](r *http.Request) (res T, err error) {
 	b, err := io.ReadAll(r.Body)
 	if err != nil {
 		return *new(T), err
 	}
-	defer r.Body.Close()
+	defer checkClose(r.Body, &err)
 
 	v, err := readFrom[T](b)
 	if err != nil {
@@ -230,12 +239,12 @@ func writeBody[T any](w http.ResponseWriter, v T) error {
 	return nil
 }
 
-func gzipDecode(b []byte) ([]byte, error) {
+func gzipDecode(b []byte) (res []byte, err error) {
 	r, err := gzip.NewReader(bytes.NewReader(b))
 	if err != nil {
 		return nil, err
 	}
-	defer r.Close()
+	defer checkClose(r, &err)
 
 	return io.ReadAll(r)
 }
