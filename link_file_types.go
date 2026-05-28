@@ -49,6 +49,24 @@ type MoveLinkReq struct {
 
 	SignatureEmail     string `json:"SignatureEmail,omitempty"`     // Passphrase signature address; only set for anonymously created nodes.
 	NameSignatureEmail string `json:"NameSignatureEmail"`           // Email address used to sign the encrypted name.
+	Name               string // Encrypted File Name
+	Hash               string // Encrypted File Name Hash by using parent's NodeHashKey
+	NameSignatureEmail string // Signature email used to sign the name. Required.
+
+	NodePassphrase string // The passphrase used to unlock the NodeKey, encrypted by the owning Link/Share keyring.
+
+	// NodePassphraseSignature is the signature of the NodePassphrase.
+	// It is required when moving an anonymously created node and must be
+	// signed using the SignatureEmail. Omitted when empty.
+	NodePassphraseSignature string `json:",omitempty"`
+
+	// SignatureEmail is the email used to sign the NodePassphrase.
+	// Required when moving an anonymously created node. Omitted when empty.
+	SignatureEmail string `json:",omitempty"`
+
+	// OriginalHash is the current name hash before the move and is used to
+	// prevent race conditions. Omitted when empty.
+	OriginalHash string `json:",omitempty"`
 }
 
 func (moveLinkReq *MoveLinkReq) SetName(name string, addrKR, nodeKR *crypto.KeyRing) error {
